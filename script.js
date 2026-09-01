@@ -1,136 +1,179 @@
-// --- 1. BASE DE DONNÉES & DECK (Existant) ---
+// --- 1. BASE DE DONNÉES AVEC IMAGES ---
+// Remplace 'imageUrl' par 'assets/cards/nom_de_l_image.png' quand tu auras tes propres images.
 const cardDatabase = [
-    { id: '1', name: 'Pikachu ex', type: 'Électrique', color: 'bg-yellow-400' },
-    { id: '2', name: 'Dracaufeu ex', type: 'Feu', color: 'bg-red-500' },
-    { id: '3', name: 'Mewtwo ex', type: 'Psy', color: 'bg-purple-500' },
-    { id: '4', name: 'Artikodin ex', type: 'Eau', color: 'bg-blue-400' },
-    { id: '5', name: 'Sablaireau', type: 'Combat', color: 'bg-orange-700' },
-    { id: '6', name: 'Poké Ball', type: 'Objet', color: 'bg-gray-300' },
-    { id: '7', name: 'Recherches Prof.', type: 'Supporter', color: 'bg-gray-400' },
-    { id: '8', name: 'Ondine', type: 'Supporter', color: 'bg-blue-200' },
-    { id: '9', name: 'Morgane', type: 'Supporter', color: 'bg-pink-300' },
-    { id: '10', name: 'Potion', type: 'Objet', color: 'bg-gray-200' }
+    { id: '1', name: 'Dracaufeu ex', imageUrl: 'https://images.pokemontcg.io/mep/6_hires.png' },
+    { id: '2', name: 'Pikachu ex', imageUrl: 'https://images.pokemontcg.io/pgo/27_hires.png' },
+    { id: '3', name: 'Mewtwo ex', imageUrl: 'https://images.pokemontcg.io/pgo/30_hires.png' },
+    { id: '4', name: 'Artikodin ex', imageUrl: 'https://images.pokemontcg.io/151/144_hires.png' },
+    { id: '5', name: 'Poké Ball', imageUrl: 'https://images.pokemontcg.io/svi/185_hires.png' },
+    { id: '6', name: 'Recherches', imageUrl: 'https://images.pokemontcg.io/svi/189_hires.png' },
+    { id: '7', name: 'Ondine', imageUrl: 'https://images.pokemontcg.io/151/161_hires.png' },
+    { id: '8', name: 'Giovanni', imageUrl: 'https://images.pokemontcg.io/151/162_hires.png' }
 ];
 
-let currentDeck = [];
-const maxDeckSize = 20;
+// --- 2. GESTION DU LOCALSTORAGE (Mémoire du navigateur) ---
+let currentDeck = JSON.parse(localStorage.getItem('tcgDeck')) || [];
+let stats = JSON.parse(localStorage.getItem('tcgStats')) || {
+    rating: 1500,
+    wins: 0,
+    losses: 0,
+    matchHistory: [1500]
+};
 
-function renderCatalog() {
-    const catalogContainer = document.getElementById('card-catalog');
-    catalogContainer.innerHTML = '';
-    cardDatabase.forEach(card => {
-        const cardEl = document.createElement('div');
-        cardEl.className = `aspect-[2.5/3.5] ${card.color} border-2 border-gray-800 rounded-lg shadow-md flex items-center justify-center text-center p-1 cursor-pointer hover:scale-105 transition font-bold text-xs text-white`;
-        cardEl.innerText = card.name;
-        cardEl.onclick = () => addToDeck(card);
-        catalogContainer.appendChild(cardEl);
-    });
+function saveData() {
+    localStorage.setItem('tcgDeck', JSON.stringify(currentDeck));
+    localStorage.setItem('tcgStats', JSON.stringify(stats));
 }
+
+// --- 3. FONCTIONS DU DECK BUILDER (Page deck.html) ---
+const maxDeckSize = 20;
 
 function addToDeck(card) {
     if (currentDeck.length >= maxDeckSize) return alert("Deck plein (20 cartes) !");
-    if (currentDeck.filter(c => c.id === card.id).length >= 2) return alert("2 exemplaires maximum !");
+    if (currentDeck.filter(c => c.id === card.id).length >= 2) return alert("2 exemplaires max par carte !");
     currentDeck.push(card);
-    updateDeckView();
+    saveData();
+    updateBuilderViews();
 }
 
 function removeFromDeck(index) {
     currentDeck.splice(index, 1);
-    updateDeckView();
+    saveData();
+    updateBuilderViews();
 }
 
 function clearDeck() {
     currentDeck = [];
-    updateDeckView();
+    saveData();
+    updateBuilderViews();
 }
 
-function updateDeckView() {
-    const deckContainer = document.getElementById('deck-container');
-    document.getElementById('deck-count').innerText = `${currentDeck.length} / 20 Cartes`;
-    deckContainer.innerHTML = '';
-    currentDeck.forEach((card, index) => {
-        const cardEl = document.createElement('div');
-        cardEl.className = `aspect-[2.5/3.5] ${card.color} border border-gray-600 rounded flex items-center justify-center text-[10px] text-center p-1 cursor-pointer font-bold text-white`;
-        cardEl.innerText = card.name;
-        cardEl.onclick = () => removeFromDeck(index);
-        deckContainer.appendChild(cardEl);
+function updateBuilderViews() {
+    // Vue du deck en construction (deck.html)
+    const builderContainer = document.getElementById('builder-deck-container');
+    if (builderContainer) {
+        builderContainer.innerHTML = '';
+        document.getElementById('builder-deck-count').innerText = `${currentDeck.length} / 20`;
+        currentDeck.forEach((card, index) => {
+            const img = document.createElement('img');
+            img.src = card.imageUrl;
+            img.className = 'w-full rounded-md shadow-sm cursor-pointer hover:scale-105 transition border-2 border-transparent hover:border-red-500';
+            img.onclick = () => removeFromDeck(index);
+            builderContainer.appendChild(img);
+        });
+    }
+
+    // Vue du deck sur le dashboard (index.html)
+    const dashboardContainer = document.getElementById('dashboard-deck-container');
+    if (dashboardContainer) {
+        dashboardContainer.innerHTML = '';
+        currentDeck.forEach(card => {
+            const img = document.createElement('img');
+            img.src = card.imageUrl;
+            img.className = 'w-full rounded shadow-sm border border-slate-600';
+            dashboardContainer.appendChild(img);
+        });
+    }
+}
+
+// Initialiser le catalogue sur la page Deck
+function initBuilder() {
+    const catalogContainer = document.getElementById('builder-catalog');
+    if (!catalogContainer) return; // Si on n'est pas sur la bonne page, on stoppe la fonction
+
+    cardDatabase.forEach(card => {
+        const img = document.createElement('img');
+        img.src = card.imageUrl;
+        img.className = 'w-full rounded-lg shadow-md cursor-pointer hover:scale-105 transition hover:shadow-purple-500/50';
+        img.onclick = () => addToDeck(card);
+        catalogContainer.appendChild(img);
     });
 }
 
-// --- 2. LOGIQUE DU TRACKER DE MATCHS ---
-let stats = {
-    rating: 3493,
-    wins: 4,
-    losses: 1,
-    matchHistory: [3400, 3420, 3390, 3450, 3493] // Points
-};
+// --- 4. FONCTIONS DU TRACKER (Page index.html) ---
+let ratingChart;
 
-// Initialisation du Graphique
-const ctx = document.getElementById('ratingChart').getContext('2d');
-let ratingChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: ['M1', 'M2', 'M3', 'M4', 'M5'], // M = Match
-        datasets: [{
-            label: 'Points',
-            data: [...stats.matchHistory],
-            borderColor: '#800080',
-            backgroundColor: 'rgba(128, 0, 128, 0.1)',
-            borderWidth: 2,
-            pointBackgroundColor: '#800080',
-            fill: true,
-            tension: 0.1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } }
-    }
-});
+function initTracker() {
+    const ctxElement = document.getElementById('ratingChart');
+    if (!ctxElement) return;
 
-// Fonction déclenchée par le bouton "Victoire"
+    const ctx = ctxElement.getContext('2d');
+    ratingChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: stats.matchHistory.map((_, i) => i === 0 ? 'Start' : `M${i}`),
+            datasets: [{
+                label: 'Points',
+                data: [...stats.matchHistory],
+                borderColor: '#c084fc', // Violet clair (Tailwind purple-400)
+                backgroundColor: 'rgba(192, 132, 252, 0.2)',
+                borderWidth: 2,
+                pointBackgroundColor: '#a855f7',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { ticks: { color: '#cbd5e1' }, grid: { color: '#334155' } },
+                x: { ticks: { color: '#cbd5e1' }, grid: { color: '#334155' } }
+            }
+        }
+    });
+
+    refreshStatsUI();
+}
+
 function addWin() {
     stats.wins += 1;
-    stats.rating += 20; // +20 points par victoire
-    updateStats("Victoire", "text-green-600");
+    stats.rating += 20;
+    updateStats("Victoire", "text-green-400");
 }
 
-// Fonction déclenchée par le bouton "Défaite"
 function addLoss() {
     stats.losses += 1;
-    stats.rating -= 15; // -15 points par défaite
-    updateStats("Défaite", "text-red-600");
+    stats.rating -= 15;
+    updateStats("Défaite", "text-red-400");
 }
 
-// Met à jour l'interface, le graphique et l'historique
 function updateStats(resultText, colorClass) {
-    // 1. Mettre à jour l'historique de données
     stats.matchHistory.push(stats.rating);
+    saveData();
+    refreshStatsUI();
     
-    // 2. Calcul du Winrate
+    const historyList = document.getElementById('history-list');
+    const newEntry = document.createElement('li');
+    newEntry.innerHTML = `<span class="${colorClass} font-bold">${resultText}</span> • ${stats.rating} pt`;
+    historyList.prepend(newEntry);
+
+    ratingChart.data.labels.push(`M${stats.matchHistory.length - 1}`);
+    ratingChart.data.datasets[0].data.push(stats.rating);
+    ratingChart.update();
+}
+
+function refreshStatsUI() {
     const totalGames = stats.wins + stats.losses;
     const winrate = totalGames === 0 ? 0 : ((stats.wins / totalGames) * 100).toFixed(1);
     
-    // 3. Mettre à jour les textes dans le HTML
     document.getElementById('current-rating').innerText = `${stats.rating} pt`;
     document.getElementById('wins-count').innerText = `${stats.wins}W`;
     document.getElementById('losses-count').innerText = `${stats.losses}L`;
     document.getElementById('winrate-pct').innerText = `${winrate}%`;
-
-    // 4. Ajouter une ligne dans l'historique textuel
-    const historyList = document.getElementById('history-list');
-    const newEntry = document.createElement('li');
-    newEntry.innerHTML = `<span class="font-bold ${colorClass}">${resultText}</span> - Nouveau Rating : ${stats.rating} pt`;
-    historyList.prepend(newEntry); // Ajoute au début de la liste
-
-    // 5. Mettre à jour le Graphique Chart.js
-    const matchNumber = stats.matchHistory.length;
-    ratingChart.data.labels.push(`M${matchNumber}`);
-    ratingChart.data.datasets[0].data.push(stats.rating);
-    ratingChart.update(); // Demande à Chart.js de se redessiner
 }
 
-// Lancement de l'affichage du deck
-renderCatalog();
-updateDeckView();
+function resetStats() {
+    if(confirm("Veux-tu vraiment remettre tes statistiques à zéro ?")) {
+        stats = { rating: 1500, wins: 0, losses: 0, matchHistory: [1500] };
+        saveData();
+        location.reload();
+    }
+}
+
+// --- INITIALISATION GLOBALE ---
+// Ce script tourne sur les deux pages, on lance donc les fonctions nécessaires
+initBuilder();
+updateBuilderViews();
+initTracker();
