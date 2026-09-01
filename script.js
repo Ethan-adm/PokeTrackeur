@@ -1,15 +1,28 @@
-// --- 1. BASE DE DONNÉES AVEC IMAGES ---
-// Remplace 'imageUrl' par 'assets/cards/nom_de_l_image.png' quand tu auras tes propres images.
-const cardDatabase = [
-    { id: '1', name: 'Dracaufeu ex', imageUrl: 'https://images.pokemontcg.io/mep/6_hires.png' },
-    { id: '2', name: 'Pikachu ex', imageUrl: 'https://images.pokemontcg.io/pgo/27_hires.png' },
-    { id: '3', name: 'Mewtwo ex', imageUrl: 'https://images.pokemontcg.io/pgo/30_hires.png' },
-    { id: '4', name: 'Artikodin ex', imageUrl: 'https://images.pokemontcg.io/151/144_hires.png' },
-    { id: '5', name: 'Poké Ball', imageUrl: 'https://images.pokemontcg.io/svi/185_hires.png' },
-    { id: '6', name: 'Recherches', imageUrl: 'https://images.pokemontcg.io/svi/189_hires.png' },
-    { id: '7', name: 'Ondine', imageUrl: 'https://images.pokemontcg.io/151/161_hires.png' },
-    { id: '8', name: 'Giovanni', imageUrl: 'https://images.pokemontcg.io/151/162_hires.png' }
-];
+// --- 1. BASE DE DONNÉES DYNAMIQUE (API) ---
+let cardDatabase = []; // Sera rempli automatiquement par l'API
+
+// Fonction pour récupérer les cartes depuis internet
+async function fetchCardsFromAPI() {
+    try {
+        // On cible ici l'API publique (exemple avec les 100 premières cartes pour charger vite)
+        // Plus tard, tu pourras remplacer ce lien par une API spécifique à TCG Pocket
+        const response = await fetch('https://api.pokemontcg.io/v2/cards?pageSize=100');
+        const data = await response.json();
+        
+        // On formate les données reçues pour notre application
+        cardDatabase = data.data.map(card => ({
+            id: card.id,
+            name: card.name,
+            imageUrl: card.images.small // L'API fournit l'URL directe de l'image
+        }));
+
+        // Une fois les cartes téléchargées, on affiche le catalogue
+        initBuilder();
+    } catch (error) {
+        console.error("Erreur lors du chargement des cartes :", error);
+        document.getElementById('builder-catalog').innerHTML = "<p class='text-red-500 col-span-full'>Erreur de chargement des cartes. Vérifie ta connexion.</p>";
+    }
+}
 
 // --- 2. GESTION DU LOCALSTORAGE (Mémoire du navigateur) ---
 let currentDeck = JSON.parse(localStorage.getItem('tcgDeck')) || [];
@@ -79,11 +92,14 @@ function updateBuilderViews() {
 // Initialiser le catalogue sur la page Deck
 function initBuilder() {
     const catalogContainer = document.getElementById('builder-catalog');
-    if (!catalogContainer) return; // Si on n'est pas sur la bonne page, on stoppe la fonction
+    if (!catalogContainer) return; 
+
+    catalogContainer.innerHTML = ''; // On vide le conteneur avant d'injecter
 
     cardDatabase.forEach(card => {
         const img = document.createElement('img');
         img.src = card.imageUrl;
+        img.loading = "lazy"; // Optimisation : charge l'image uniquement quand on scrolle dessus
         img.className = 'w-full rounded-lg shadow-md cursor-pointer hover:scale-105 transition hover:shadow-purple-500/50';
         img.onclick = () => addToDeck(card);
         catalogContainer.appendChild(img);
@@ -105,7 +121,7 @@ function initTracker() {
             datasets: [{
                 label: 'Points',
                 data: [...stats.matchHistory],
-                borderColor: '#c084fc', // Violet clair (Tailwind purple-400)
+                borderColor: '#c084fc', 
                 backgroundColor: 'rgba(192, 132, 252, 0.2)',
                 borderWidth: 2,
                 pointBackgroundColor: '#a855f7',
@@ -173,7 +189,7 @@ function resetStats() {
 }
 
 // --- INITIALISATION GLOBALE ---
-// Ce script tourne sur les deux pages, on lance donc les fonctions nécessaires
-initBuilder();
+// On lance la récupération de l'API en premier
+fetchCardsFromAPI();
 updateBuilderViews();
 initTracker();
