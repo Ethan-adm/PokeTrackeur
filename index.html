@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- LA LIGNE MAGIQUE QUI DÉBLOQUE LES IMAGES SEREBII -->
+    <meta name="referrer" content="no-referrer">
     <title>TCGP Tracker - Matchs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,7 +24,6 @@
 
     <div class="flex justify-between h-full max-w-[1600px] w-full mx-auto gap-6 p-6">
         
-        <!-- GAUCHE : Évolution du Rank -->
         <div class="w-80 bg-black/50 backdrop-blur-xl shadow-2xl rounded-2xl p-5 flex flex-col border border-white/10">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Master Ball Rank</p>
             <div class="h-48 relative mb-4">
@@ -37,10 +38,7 @@
             </div>
         </div>
 
-        <!-- CENTRE : Le tableau de bord du Match -->
         <div class="flex-1 bg-black/30 backdrop-blur-xl shadow-2xl rounded-2xl p-8 flex flex-col border border-white/10 relative">
-            
-            <!-- Affichage de la Win Streak -->
             <div class="flex justify-center mb-8">
                 <div class="bg-gradient-to-br from-orange-500 to-red-600 p-1 rounded-2xl shadow-[0_0_20px_rgba(239,68,68,0.2)]">
                     <div class="bg-black/90 rounded-xl px-8 py-4 flex flex-col items-center">
@@ -53,23 +51,17 @@
                 </div>
             </div>
 
-            <!-- Sélection du Matchup (Adversaire) -->
             <div class="mb-auto">
                 <label class="text-sm font-bold text-slate-300 uppercase tracking-widest mb-4 block text-center">Deck Adverse (Matchup)</label>
-                <div class="grid grid-cols-5 gap-3" id="opponent-selector">
-                    <!-- Généré par JS avec les archétypes Meta -->
-                </div>
-                <p class="text-center text-xs text-slate-500 mt-4">Sélectionnez le deck affronté pour enrichir vos statistiques (Optionnel).</p>
+                <div class="grid grid-cols-5 gap-3" id="opponent-selector"></div>
             </div>
 
-            <!-- Actions de fin de match -->
             <div class="flex gap-4 mt-8 pt-8 border-t border-white/10">
                 <button onclick="resolveMatch('win')" class="flex-1 bg-gradient-to-t from-emerald-600 to-emerald-400 hover:to-emerald-300 text-white font-black text-2xl py-6 rounded-xl shadow-[0_0_20px_rgba(52,211,153,0.2)] transition-transform hover:scale-[1.02]">VICTOIRE</button>
                 <button onclick="resolveMatch('loss')" class="flex-1 bg-gradient-to-t from-rose-600 to-rose-400 hover:to-rose-300 text-white font-black text-2xl py-6 rounded-xl shadow-[0_0_20px_rgba(251,113,133,0.2)] transition-transform hover:scale-[1.02]">DÉFAITE</button>
             </div>
         </div>
 
-        <!-- DROITE : Statistiques Globales & Ton Deck -->
         <div class="w-80 bg-black/50 backdrop-blur-xl shadow-2xl rounded-2xl p-5 flex flex-col border border-white/10">
             <div class="bg-black/60 p-4 rounded-xl border border-white/5 mb-4">
                 <div class="flex justify-between items-end mb-3 border-b border-white/10 pb-3">
@@ -88,9 +80,7 @@
 
             <div class="flex-1 overflow-y-auto custom-scrollbar">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">Mon Deck (Importé)</p>
-                <div class="grid grid-cols-4 gap-1" id="dashboard-deck-container">
-                    <!-- Cartes affichées ici -->
-                </div>
+                <div class="grid grid-cols-4 gap-1" id="dashboard-deck-container"></div>
             </div>
         </div>
     </div>
