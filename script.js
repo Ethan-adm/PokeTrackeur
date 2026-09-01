@@ -1,5 +1,4 @@
 // --- 1. DATA POCKET TCG (Meta Limitless / Assets Serebii) ---
-// Cartes principales pour générer les decks méta
 const pocketCards = {
     mewtwo: { id: 'mewtwo', name: 'Mewtwo ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/129.jpg' },
     gardevoir: { id: 'gardevoir', name: 'Gardevoir', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/127.jpg' },
@@ -13,9 +12,10 @@ const pocketCards = {
     sabrina: { id: 'sabrina', name: 'Sabrina', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/279.jpg' },
     ondine: { id: 'ondine', name: 'Ondine', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/277.jpg' },
     morgane: { id: 'morgane', name: 'Morgane', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/274.jpg' },
+    pokeball: { id: 'pokeball', name: 'Poké Ball', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/265.jpg' },
+    recherches: { id: 'recherches', name: 'Recherches Professorales', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/278.jpg' },
 };
 
-// Archétypes méta pour la sélection du matchup adverse
 const metaArchetypes = [
     { id: 'meta-mewtwo', name: 'Mewtwo / Gardevoir', icon: pocketCards.mewtwo.img },
     { id: 'meta-pika', name: 'Pikachu / Zapdos', icon: pocketCards.pikachu.img },
@@ -27,10 +27,10 @@ const metaArchetypes = [
 // --- 2. GESTION D'ÉTAT & LOCALSTORAGE ---
 let currentDeck = JSON.parse(localStorage.getItem('tcgp_deck')) || [];
 let stats = JSON.parse(localStorage.getItem('tcgp_stats')) || {
-    rating: 1500, // Points de base Master Ball
+    rating: 1500, 
     wins: 0,
     losses: 0,
-    streak: 0,    // Série de victoires en cours
+    streak: 0,    
     matchHistory: [1500]
 };
 let selectedOpponent = null;
@@ -40,10 +40,8 @@ function saveData() {
     localStorage.setItem('tcgp_stats', JSON.stringify(stats));
 }
 
-// --- 3. LOGIQUE MASTER BALL RANKED (Le cœur du calcul) ---
+// --- 3. LOGIQUE MASTER BALL RANKED ---
 function calculateWinPoints(currentStreak) {
-    // Calcul exact des points de série TCG Pocket Master Ball
-    // Victoire 1 = +10, V2 = +13, V3 = +16, V4 = +19, V5+ = +22
     switch(currentStreak) {
         case 0: return 10;
         case 1: return 13;
@@ -66,10 +64,10 @@ function resolveMatch(result) {
         resultText = `VICTOIRE (+${pointsChange})`;
         badgeClass = "text-emerald-400 bg-emerald-900/30 border-emerald-500/30";
     } else {
-        pointsChange = -10; // Défaite Master Ball = toujours -10
-        stats.rating += pointsChange; // rating - 10
+        pointsChange = -10;
+        stats.rating += pointsChange;
         stats.losses += 1;
-        stats.streak = 0; // Bris de série
+        stats.streak = 0;
         resultText = `DÉFAITE (${pointsChange})`;
         badgeClass = "text-rose-400 bg-rose-900/30 border-rose-500/30";
     }
@@ -77,14 +75,65 @@ function resolveMatch(result) {
     updateTrackerUI(resultText, badgeClass);
 }
 
-// --- 4. INTERFACE GRAPHIQUE DU TRACKER ---
+// --- 4. FONCTIONS DE L'ÉDITEUR DE DECK ---
+function initBuilder() {
+    const catalogContainer = document.getElementById('builder-catalog');
+    if (!catalogContainer) return;
+
+    Object.values(pocketCards).forEach(card => {
+        const img = document.createElement('img');
+        img.src = card.img;
+        img.className = 'w-full rounded-xl shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 border-2 border-transparent hover:border-indigo-400';
+        img.onclick = () => addToDeck(card);
+        catalogContainer.appendChild(img);
+    });
+    
+    updateBuilderViews();
+}
+
+function addToDeck(card) {
+    if (currentDeck.length >= 20) return alert("Deck plein (20 cartes) !");
+    if (currentDeck.filter(c => c.id === card.id).length >= 2) return alert("2 exemplaires max par carte !");
+    currentDeck.push(card);
+    saveData();
+    updateBuilderViews();
+}
+
+function removeFromDeck(index) {
+    currentDeck.splice(index, 1);
+    saveData();
+    updateBuilderViews();
+}
+
+function clearDeck() {
+    currentDeck = [];
+    saveData();
+    updateBuilderViews();
+}
+
+function updateBuilderViews() {
+    const builderContainer = document.getElementById('builder-deck-container');
+    if (builderContainer) {
+        builderContainer.innerHTML = '';
+        document.getElementById('builder-deck-count').innerText = `${currentDeck.length} / 20`;
+        currentDeck.forEach((card, index) => {
+            const img = document.createElement('img');
+            img.src = card.img;
+            img.className = 'w-full rounded-lg shadow-sm cursor-pointer hover:scale-105 border-2 border-transparent hover:border-rose-500';
+            img.onclick = () => removeFromDeck(index);
+            builderContainer.appendChild(img);
+        });
+    }
+    renderDashboardDeck();
+}
+
+// --- 5. INTERFACE GRAPHIQUE DU TRACKER ---
 let ratingChart;
 
 function initTracker() {
     const ctxElement = document.getElementById('ratingChart');
     if (!ctxElement) return;
 
-    // Initialisation Chart.js
     const ctx = ctxElement.getContext('2d');
     ratingChart = new Chart(ctx, {
         type: 'line',
@@ -93,7 +142,7 @@ function initTracker() {
             datasets: [{
                 label: 'Points',
                 data: [...stats.matchHistory],
-                borderColor: '#818cf8', // Indigo-400
+                borderColor: '#818cf8',
                 backgroundColor: 'rgba(129, 140, 248, 0.15)',
                 borderWidth: 2,
                 pointBackgroundColor: '#fff',
@@ -112,14 +161,12 @@ function initTracker() {
         }
     });
 
-    // Génération du sélecteur de Matchup (Adversaires Meta)
     const opponentSelector = document.getElementById('opponent-selector');
     metaArchetypes.forEach(archetype => {
         const btn = document.createElement('div');
         btn.className = "cursor-pointer rounded-xl border-2 border-transparent hover:border-indigo-400 opacity-60 hover:opacity-100 transition-all text-center";
         btn.innerHTML = `<img src="${archetype.icon}" class="w-full rounded-lg shadow-md mb-1"><span class="text-[10px] font-bold text-slate-300 leading-tight block">${archetype.name}</span>`;
         btn.onclick = () => {
-            // Logique visuelle de sélection
             Array.from(opponentSelector.children).forEach(c => { c.classList.remove('border-indigo-400', 'opacity-100'); c.classList.add('border-transparent', 'opacity-60'); });
             btn.classList.remove('border-transparent', 'opacity-60');
             btn.classList.add('border-indigo-400', 'opacity-100');
@@ -129,7 +176,6 @@ function initTracker() {
     });
 
     refreshStatsUI();
-    renderDashboardDeck();
     rebuildHistoryLog();
 }
 
@@ -138,7 +184,6 @@ function updateTrackerUI(resultText, badgeClass) {
     saveData();
     refreshStatsUI();
     
-    // Ajout Historique avec mention du matchup si sélectionné
     const historyList = document.getElementById('history-list');
     const newEntry = document.createElement('li');
     newEntry.className = "flex justify-between items-center bg-white/5 p-2 rounded-lg border border-white/5 text-xs";
@@ -149,7 +194,6 @@ function updateTrackerUI(resultText, badgeClass) {
     `;
     historyList.prepend(newEntry);
 
-    // MàJ Graphique
     ratingChart.data.labels.push(`M${stats.matchHistory.length - 1}`);
     ratingChart.data.datasets[0].data.push(stats.rating);
     ratingChart.update();
@@ -164,10 +208,11 @@ function refreshStatsUI() {
     document.getElementById('losses-count').innerText = `${stats.losses}L`;
     document.getElementById('winrate-pct').innerText = `${winrate}%`;
 
-    // Màj visuelle de la Win Streak
-    document.getElementById('streak-counter').innerText = stats.streak;
-    const nextPoints = calculateWinPoints(stats.streak);
-    document.getElementById('next-win-points').innerText = `Prochaine victoire : +${nextPoints} pt`;
+    const streakCounter = document.getElementById('streak-counter');
+    if (streakCounter) {
+        streakCounter.innerText = stats.streak;
+        document.getElementById('next-win-points').innerText = `Prochaine victoire : +${calculateWinPoints(stats.streak)} pt`;
+    }
 }
 
 function renderDashboardDeck() {
@@ -189,10 +234,9 @@ function renderDashboardDeck() {
 }
 
 function rebuildHistoryLog() {
-    // Restaure un visuel basique de l'historique au rafraîchissement
     const historyList = document.getElementById('history-list');
     if (historyList && stats.matchHistory.length > 1) {
-        historyList.innerHTML = `<li class="text-center text-xs text-slate-500 italic">Historique des matchs précédents masqué.</li>`;
+        historyList.innerHTML = `<li class="text-center text-xs text-slate-500 italic">Historique précédent masqué.</li>`;
     }
 }
 
@@ -204,7 +248,9 @@ function resetStats() {
     }
 }
 
-// Initialisation de la page actuelle
+// Initialisation globale
 document.addEventListener('DOMContentLoaded', () => {
+    initBuilder();
     initTracker();
+    updateBuilderViews();
 });
