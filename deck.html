@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- LA LIGNE MAGIQUE ICI AUSSI -->
+    <meta name="referrer" content="no-referrer">
     <title>TCGP Tracker - Mes Decks</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-indigo-950 to-slate-900 text-white min-h-screen flex flex-col font-sans">
     
-    <!-- Barre de Navigation -->
     <nav class="bg-black/40 backdrop-blur-md p-4 flex justify-between items-center border-b border-white/10">
         <div class="flex items-center gap-3">
             <div class="w-3 h-3 rounded-full bg-purple-500"></div>
@@ -21,24 +22,17 @@
 
     <div class="flex max-w-[1600px] w-full mx-auto gap-6 p-6 h-[calc(100vh-80px)]">
         
-        <!-- CATALOGUE DES CARTES POCKET -->
         <div class="flex-[3] bg-black/50 backdrop-blur-xl shadow-2xl rounded-2xl p-5 flex flex-col border border-white/10 h-full">
             <h2 class="text-sm font-bold text-slate-300 uppercase tracking-widest mb-4 border-b border-white/10 pb-3">Cartes Disponibles <span class="text-xs text-slate-500 normal-case">(Cliquez pour ajouter)</span></h2>
-            
-            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 overflow-y-auto p-2 content-start custom-scrollbar h-full" id="builder-catalog">
-                <!-- Les cartes s'affichent ici -->
-            </div>
+            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 overflow-y-auto p-2 content-start custom-scrollbar h-full" id="builder-catalog"></div>
         </div>
 
-        <!-- DECK EN CONSTRUCTION -->
         <div class="flex-1 bg-black/50 backdrop-blur-xl shadow-2xl rounded-2xl p-5 flex flex-col border border-white/10 h-full">
             <div class="flex justify-between items-center border-b border-white/10 pb-3 mb-4">
                 <h2 class="text-sm font-bold text-slate-300 uppercase tracking-widest">Mon Deck</h2>
                 <span class="font-bold text-indigo-400 bg-indigo-900/30 border border-indigo-500/30 px-3 py-1 rounded-full text-xs" id="builder-deck-count">0 / 20</span>
             </div>
-            <div class="grid grid-cols-3 xl:grid-cols-4 gap-2 overflow-y-auto p-2 flex-1 content-start custom-scrollbar" id="builder-deck-container">
-                <!-- Les cartes sélectionnées -->
-            </div>
+            <div class="grid grid-cols-3 xl:grid-cols-4 gap-2 overflow-y-auto p-2 flex-1 content-start custom-scrollbar" id="builder-deck-container"></div>
             <div class="mt-4 pt-4 border-t border-white/10">
                 <button onclick="clearDeck()" class="bg-rose-500/20 text-rose-400 border border-rose-500/30 px-4 py-3 rounded-xl font-bold hover:bg-rose-500 hover:text-white w-full transition-all uppercase tracking-widest text-sm">Vider le deck</button>
             </div>
