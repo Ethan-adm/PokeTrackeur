@@ -1,4 +1,4 @@
-// --- 1. BASE DE DONNÉES DE CARTES (Miniature pour l'exemple) ---
+// --- 1. BASE DE DONNÉES & DECK (Existant) ---
 const cardDatabase = [
     { id: '1', name: 'Pikachu ex', type: 'Électrique', color: 'bg-yellow-400' },
     { id: '2', name: 'Dracaufeu ex', type: 'Feu', color: 'bg-red-500' },
@@ -12,86 +12,68 @@ const cardDatabase = [
     { id: '10', name: 'Potion', type: 'Objet', color: 'bg-gray-200' }
 ];
 
-// --- 2. LOGIQUE DU DECK ---
-let currentDeck = []; // Tableau qui va contenir les cartes choisies
+let currentDeck = [];
 const maxDeckSize = 20;
 
-// Fonction pour afficher les cartes disponibles au centre
 function renderCatalog() {
     const catalogContainer = document.getElementById('card-catalog');
     catalogContainer.innerHTML = '';
-
     cardDatabase.forEach(card => {
         const cardEl = document.createElement('div');
-        // On donne un style coloré basé sur le type de la carte
-        cardEl.className = `aspect-[2.5/3.5] ${card.color} border-2 border-gray-800 rounded-lg shadow-md flex items-center justify-center text-center p-1 cursor-pointer hover:scale-105 transition font-bold text-xs text-white text-shadow`;
+        cardEl.className = `aspect-[2.5/3.5] ${card.color} border-2 border-gray-800 rounded-lg shadow-md flex items-center justify-center text-center p-1 cursor-pointer hover:scale-105 transition font-bold text-xs text-white`;
         cardEl.innerText = card.name;
-        
-        // Quand on clique, on ajoute au deck
         cardEl.onclick = () => addToDeck(card);
         catalogContainer.appendChild(cardEl);
     });
 }
 
-// Fonction pour ajouter une carte au deck
 function addToDeck(card) {
-    if (currentDeck.length >= maxDeckSize) {
-        alert("Ton deck est plein (20 cartes) !");
-        return;
-    }
-
-    // Vérifier s'il n'y a pas déjà 2 exemplaires de cette carte (règle TCG Pocket)
-    const cardCount = currentDeck.filter(c => c.id === card.id).length;
-    if (cardCount >= 2) {
-        alert("Tu ne peux pas avoir plus de 2 fois la même carte dans un deck Pocket !");
-        return;
-    }
-
+    if (currentDeck.length >= maxDeckSize) return alert("Deck plein (20 cartes) !");
+    if (currentDeck.filter(c => c.id === card.id).length >= 2) return alert("2 exemplaires maximum !");
     currentDeck.push(card);
     updateDeckView();
 }
 
-// Fonction pour retirer une carte du deck en cliquant dessus
 function removeFromDeck(index) {
     currentDeck.splice(index, 1);
     updateDeckView();
 }
 
-// Fonction pour vider tout le deck
 function clearDeck() {
     currentDeck = [];
     updateDeckView();
 }
 
-// Mettre à jour l'affichage du deck à droite
 function updateDeckView() {
     const deckContainer = document.getElementById('deck-container');
-    const deckCount = document.getElementById('deck-count');
-    
+    document.getElementById('deck-count').innerText = `${currentDeck.length} / 20 Cartes`;
     deckContainer.innerHTML = '';
-    deckCount.innerText = `${currentDeck.length} / 20 Cartes`;
-
     currentDeck.forEach((card, index) => {
         const cardEl = document.createElement('div');
         cardEl.className = `aspect-[2.5/3.5] ${card.color} border border-gray-600 rounded flex items-center justify-center text-[10px] text-center p-1 cursor-pointer font-bold text-white`;
         cardEl.innerText = card.name;
-        cardEl.title = "Cliquez pour retirer";
-        
-        // Clic droit ou clic simple pour retirer la carte
         cardEl.onclick = () => removeFromDeck(index);
         deckContainer.appendChild(cardEl);
     });
 }
 
-// --- 3. INITIALISATION DU GRAPHIQUE (Chart.js) ---
+// --- 2. LOGIQUE DU TRACKER DE MATCHS ---
+let stats = {
+    rating: 3493,
+    wins: 4,
+    losses: 1,
+    matchHistory: [3400, 3420, 3390, 3450, 3493] // Points
+};
+
+// Initialisation du Graphique
 const ctx = document.getElementById('ratingChart').getContext('2d');
-const ratingChart = new Chart(ctx, {
+let ratingChart = new Chart(ctx, {
     type: 'line',
     data: {
-        labels: ['Départ', 'Match 1', 'Match 2', 'Match 3'],
+        labels: ['M1', 'M2', 'M3', 'M4', 'M5'], // M = Match
         datasets: [{
             label: 'Points',
-            data: [3400, 3420, 3390, 3493],
+            data: [...stats.matchHistory],
             borderColor: '#800080',
             backgroundColor: 'rgba(128, 0, 128, 0.1)',
             borderWidth: 2,
@@ -107,6 +89,48 @@ const ratingChart = new Chart(ctx, {
     }
 });
 
-// --- Lancement au chargement de la page ---
+// Fonction déclenchée par le bouton "Victoire"
+function addWin() {
+    stats.wins += 1;
+    stats.rating += 20; // +20 points par victoire
+    updateStats("Victoire", "text-green-600");
+}
+
+// Fonction déclenchée par le bouton "Défaite"
+function addLoss() {
+    stats.losses += 1;
+    stats.rating -= 15; // -15 points par défaite
+    updateStats("Défaite", "text-red-600");
+}
+
+// Met à jour l'interface, le graphique et l'historique
+function updateStats(resultText, colorClass) {
+    // 1. Mettre à jour l'historique de données
+    stats.matchHistory.push(stats.rating);
+    
+    // 2. Calcul du Winrate
+    const totalGames = stats.wins + stats.losses;
+    const winrate = totalGames === 0 ? 0 : ((stats.wins / totalGames) * 100).toFixed(1);
+    
+    // 3. Mettre à jour les textes dans le HTML
+    document.getElementById('current-rating').innerText = `${stats.rating} pt`;
+    document.getElementById('wins-count').innerText = `${stats.wins}W`;
+    document.getElementById('losses-count').innerText = `${stats.losses}L`;
+    document.getElementById('winrate-pct').innerText = `${winrate}%`;
+
+    // 4. Ajouter une ligne dans l'historique textuel
+    const historyList = document.getElementById('history-list');
+    const newEntry = document.createElement('li');
+    newEntry.innerHTML = `<span class="font-bold ${colorClass}">${resultText}</span> - Nouveau Rating : ${stats.rating} pt`;
+    historyList.prepend(newEntry); // Ajoute au début de la liste
+
+    // 5. Mettre à jour le Graphique Chart.js
+    const matchNumber = stats.matchHistory.length;
+    ratingChart.data.labels.push(`M${matchNumber}`);
+    ratingChart.data.datasets[0].data.push(stats.rating);
+    ratingChart.update(); // Demande à Chart.js de se redessiner
+}
+
+// Lancement de l'affichage du deck
 renderCatalog();
 updateDeckView();
