@@ -1,19 +1,22 @@
-// --- 1. DATA POCKET TCG (Meta Limitless / Assets Serebii) ---
+// --- 1. DATA POCKET TCG (Meta Limitless / Assets Serebii via Proxy) ---
+// Utilisation d'un Proxy (wsrv.nl) pour contourner le blocage anti-hotlink de Serebii et supprimer le lag
+const proxy = "https://wsrv.nl/?url=";
+
 const pocketCards = {
-    mewtwo: { id: 'mewtwo', name: 'Mewtwo ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/129.jpg' },
-    gardevoir: { id: 'gardevoir', name: 'Gardevoir', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/127.jpg' },
-    pikachu: { id: 'pikachu', name: 'Pikachu ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/096.jpg' },
-    electhor: { id: 'electhor', name: 'Électhor ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/104.jpg' },
-    dracaufeu: { id: 'dracaufeu', name: 'Dracaufeu ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/036.jpg' },
-    sulfura: { id: 'sulfura', name: 'Sulfura ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/035.jpg' },
-    stari: { id: 'stari', name: 'Staross ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/053.jpg' },
-    artikodin: { id: 'artikodin', name: 'Artikodin ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/052.jpg' },
-    florizarre: { id: 'florizarre', name: 'Florizarre ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/004.jpg' },
-    sabrina: { id: 'sabrina', name: 'Sabrina', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/279.jpg' },
-    ondine: { id: 'ondine', name: 'Ondine', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/277.jpg' },
-    morgane: { id: 'morgane', name: 'Morgane', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/274.jpg' },
-    pokeball: { id: 'pokeball', name: 'Poké Ball', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/265.jpg' },
-    recherches: { id: 'recherches', name: 'Recherches Professorales', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/278.jpg' },
+    mewtwo: { id: 'mewtwo', name: 'Mewtwo ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/129.jpg' },
+    gardevoir: { id: 'gardevoir', name: 'Gardevoir', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/127.jpg' },
+    pikachu: { id: 'pikachu', name: 'Pikachu ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/096.jpg' },
+    electhor: { id: 'electhor', name: 'Électhor ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/104.jpg' },
+    dracaufeu: { id: 'dracaufeu', name: 'Dracaufeu ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/036.jpg' },
+    sulfura: { id: 'sulfura', name: 'Sulfura ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/035.jpg' },
+    stari: { id: 'stari', name: 'Staross ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/053.jpg' },
+    artikodin: { id: 'artikodin', name: 'Artikodin ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/052.jpg' },
+    florizarre: { id: 'florizarre', name: 'Florizarre ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/004.jpg' },
+    sabrina: { id: 'sabrina', name: 'Sabrina', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/279.jpg' },
+    ondine: { id: 'ondine', name: 'Ondine', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/277.jpg' },
+    morgane: { id: 'morgane', name: 'Morgane', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/274.jpg' },
+    pokeball: { id: 'pokeball', name: 'Poké Ball', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/265.jpg' },
+    recherches: { id: 'recherches', name: 'Recherches Professorales', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/278.jpg' },
 };
 
 const metaArchetypes = [
@@ -80,11 +83,19 @@ function initBuilder() {
     const catalogContainer = document.getElementById('builder-catalog');
     if (!catalogContainer) return;
 
+    // Pour éviter le lag, on affiche les images de manière optimisée
     Object.values(pocketCards).forEach(card => {
         const img = document.createElement('img');
         img.src = card.img;
-        img.className = 'w-full rounded-xl shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 border-2 border-transparent hover:border-indigo-400';
+        img.loading = "lazy"; // Force le navigateur à ne pas tout charger d'un coup
+        img.className = 'w-full rounded-xl shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 border-2 border-transparent hover:border-indigo-400 bg-slate-800 min-h-[140px]';
         img.onclick = () => addToDeck(card);
+        
+        // Gestion visuelle si l'image casse quand même
+        img.onerror = function() {
+            this.src = 'https://via.placeholder.com/150x210/1e293b/94a3b8?text=Carte+Non+Trouvée';
+        };
+        
         catalogContainer.appendChild(img);
     });
     
@@ -119,7 +130,7 @@ function updateBuilderViews() {
         currentDeck.forEach((card, index) => {
             const img = document.createElement('img');
             img.src = card.img;
-            img.className = 'w-full rounded-lg shadow-sm cursor-pointer hover:scale-105 border-2 border-transparent hover:border-rose-500';
+            img.className = 'w-full rounded-lg shadow-sm cursor-pointer hover:scale-105 border-2 border-transparent hover:border-rose-500 bg-slate-800 min-h-[140px]';
             img.onclick = () => removeFromDeck(index);
             builderContainer.appendChild(img);
         });
@@ -165,7 +176,7 @@ function initTracker() {
     metaArchetypes.forEach(archetype => {
         const btn = document.createElement('div');
         btn.className = "cursor-pointer rounded-xl border-2 border-transparent hover:border-indigo-400 opacity-60 hover:opacity-100 transition-all text-center";
-        btn.innerHTML = `<img src="${archetype.icon}" class="w-full rounded-lg shadow-md mb-1"><span class="text-[10px] font-bold text-slate-300 leading-tight block">${archetype.name}</span>`;
+        btn.innerHTML = `<img src="${archetype.icon}" class="w-full rounded-lg shadow-md mb-1 bg-slate-800"><span class="text-[10px] font-bold text-slate-300 leading-tight block">${archetype.name}</span>`;
         btn.onclick = () => {
             Array.from(opponentSelector.children).forEach(c => { c.classList.remove('border-indigo-400', 'opacity-100'); c.classList.add('border-transparent', 'opacity-60'); });
             btn.classList.remove('border-transparent', 'opacity-60');
@@ -221,14 +232,14 @@ function renderDashboardDeck() {
     container.innerHTML = '';
     
     if(currentDeck.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-500 col-span-4 text-center">Aucun deck importé. Allez dans "Mes Decks".</p>';
+        container.innerHTML = '<p class="text-xs text-slate-500 col-span-4 text-center mt-4">Aucun deck importé.<br>Allez dans "Mes Decks".</p>';
         return;
     }
 
     currentDeck.forEach(card => {
         const img = document.createElement('img');
         img.src = card.img;
-        img.className = 'w-full rounded shadow-sm border border-white/10';
+        img.className = 'w-full rounded shadow-sm border border-white/10 bg-slate-800';
         container.appendChild(img);
     });
 }
