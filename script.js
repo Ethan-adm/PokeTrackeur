@@ -1,22 +1,20 @@
 // --- 1. DATA POCKET TCG ---
-// Proxy WSVR avec "https://" corrigé pour contourner l'anti-hotlink
-const proxy = "https://wsrv.nl/?url=https://";
-
+// Les URL directes Serebii fonctionneront maintenant grâce à la balise meta "no-referrer" dans le HTML.
 const pocketCards = {
-    mewtwo: { id: 'mewtwo', name: 'Mewtwo ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/129.jpg' },
-    gardevoir: { id: 'gardevoir', name: 'Gardevoir', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/127.jpg' },
-    pikachu: { id: 'pikachu', name: 'Pikachu ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/096.jpg' },
-    electhor: { id: 'electhor', name: 'Électhor ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/104.jpg' },
-    dracaufeu: { id: 'dracaufeu', name: 'Dracaufeu ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/036.jpg' },
-    sulfura: { id: 'sulfura', name: 'Sulfura ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/035.jpg' },
-    stari: { id: 'stari', name: 'Staross ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/053.jpg' },
-    artikodin: { id: 'artikodin', name: 'Artikodin ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/052.jpg' },
-    florizarre: { id: 'florizarre', name: 'Florizarre ex', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/004.jpg' },
-    sabrina: { id: 'sabrina', name: 'Sabrina', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/279.jpg' },
-    ondine: { id: 'ondine', name: 'Ondine', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/277.jpg' },
-    morgane: { id: 'morgane', name: 'Morgane', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/274.jpg' },
-    pokeball: { id: 'pokeball', name: 'Poké Ball', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/265.jpg' },
-    recherches: { id: 'recherches', name: 'Recherches Prof.', img: proxy + 'serebii.net/pokemontcgpocket/cards/geneticapex/278.jpg' },
+    mewtwo: { id: 'mewtwo', name: 'Mewtwo ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/129.jpg' },
+    gardevoir: { id: 'gardevoir', name: 'Gardevoir', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/127.jpg' },
+    pikachu: { id: 'pikachu', name: 'Pikachu ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/096.jpg' },
+    electhor: { id: 'electhor', name: 'Électhor ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/104.jpg' },
+    dracaufeu: { id: 'dracaufeu', name: 'Dracaufeu ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/036.jpg' },
+    sulfura: { id: 'sulfura', name: 'Sulfura ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/035.jpg' },
+    stari: { id: 'stari', name: 'Staross ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/053.jpg' },
+    artikodin: { id: 'artikodin', name: 'Artikodin ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/052.jpg' },
+    florizarre: { id: 'florizarre', name: 'Florizarre ex', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/004.jpg' },
+    sabrina: { id: 'sabrina', name: 'Sabrina', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/279.jpg' },
+    ondine: { id: 'ondine', name: 'Ondine', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/277.jpg' },
+    morgane: { id: 'morgane', name: 'Morgane', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/274.jpg' },
+    pokeball: { id: 'pokeball', name: 'Poké Ball', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/265.jpg' },
+    recherches: { id: 'recherches', name: 'Recherches Prof.', img: 'https://serebii.net/pokemontcgpocket/cards/geneticapex/278.jpg' }
 };
 
 const metaArchetypes = [
@@ -89,11 +87,6 @@ function initBuilder() {
         img.loading = "lazy";
         img.className = 'w-full rounded-xl shadow-lg cursor-pointer transition-all duration-200 hover:scale-110 border-2 border-transparent hover:border-indigo-400 bg-slate-800 min-h-[140px]';
         img.onclick = () => addToDeck(card);
-        
-        img.onerror = function() {
-            this.src = 'https://via.placeholder.com/150x210/1e293b/94a3b8?text=Carte+Non+Trouvée';
-        };
-        
         catalogContainer.appendChild(img);
     });
     
@@ -130,11 +123,6 @@ function updateBuilderViews() {
             img.src = card.img;
             img.className = 'w-full rounded-lg shadow-sm cursor-pointer hover:scale-105 border-2 border-transparent hover:border-rose-500 bg-slate-800 min-h-[140px]';
             img.onclick = () => removeFromDeck(index);
-            
-            img.onerror = function() {
-                this.src = 'https://via.placeholder.com/150x210/1e293b/94a3b8?text=Carte+Non+Trouvée';
-            };
-            
             builderContainer.appendChild(img);
         });
     }
@@ -179,7 +167,7 @@ function initTracker() {
     metaArchetypes.forEach(archetype => {
         const btn = document.createElement('div');
         btn.className = "cursor-pointer rounded-xl border-2 border-transparent hover:border-indigo-400 opacity-60 hover:opacity-100 transition-all text-center";
-        btn.innerHTML = `<img src="${archetype.icon}" class="w-full rounded-lg shadow-md mb-1 bg-slate-800" onerror="this.src='https://via.placeholder.com/150x210/1e293b/94a3b8?text=Carte+Non+Trouvée'"><span class="text-[10px] font-bold text-slate-300 leading-tight block">${archetype.name}</span>`;
+        btn.innerHTML = `<img src="${archetype.icon}" class="w-full rounded-lg shadow-md mb-1 bg-slate-800"><span class="text-[10px] font-bold text-slate-300 leading-tight block">${archetype.name}</span>`;
         btn.onclick = () => {
             Array.from(opponentSelector.children).forEach(c => { c.classList.remove('border-indigo-400', 'opacity-100'); c.classList.add('border-transparent', 'opacity-60'); });
             btn.classList.remove('border-transparent', 'opacity-60');
@@ -243,11 +231,6 @@ function renderDashboardDeck() {
         const img = document.createElement('img');
         img.src = card.img;
         img.className = 'w-full rounded shadow-sm border border-white/10 bg-slate-800';
-        
-        img.onerror = function() {
-            this.src = 'https://via.placeholder.com/150x210/1e293b/94a3b8?text=Carte+Non+Trouvée';
-        };
-        
         container.appendChild(img);
     });
 }
